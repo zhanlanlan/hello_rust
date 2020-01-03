@@ -5,12 +5,14 @@ extern crate rand;
 use rand::Rng;
 use std::alloc;
 use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
+use std::fmt::Debug;
 use std::mem;
+use std::ptr;
 
 #[derive(Debug, Clone)]
 struct TreeNode<T>
 where
-    T: Ord + Clone,
+    T: Debug + Ord + Clone,
 {
     element: T,
     left: Option<*mut TreeNode<T>>,
@@ -20,20 +22,48 @@ where
 #[derive(Debug, Clone)]
 struct Tree<T>
 where
-    T: Ord + Clone,
+    T: Debug + Ord + Clone,
 {
     tree: Option<*mut TreeNode<T>>,
 }
 
+impl<T> Drop for Tree<T>
+where
+    T: Debug + Ord + Clone,
+{
+    fn drop(&mut self) {
+        unsafe {
+            if let Option::Some(x) = self.tree {
+                (*x).drop_()
+            }
+        }
+    }
+}
+
 impl<T> TreeNode<T>
 where
-    T: Ord + Clone,
+    T: Debug + Ord + Clone,
 {
     fn new(ele: T) -> TreeNode<T> {
         TreeNode {
             element: ele,
             left: Option::None,
             right: Option::None,
+        }
+    }
+
+    fn drop_(&mut self) {
+        unsafe {
+            match self.left {
+                Option::Some(x) => (*x).drop_(),
+                Option::None => (),
+            }
+            match self.right {
+                Option::Some(x) => (*x).drop_(),
+                Option::None => (),
+            }
+            println!("yeah awesome !");
+            Self::dealloc_mut_one(self as *mut TreeNode<T>)
         }
     }
 
@@ -77,23 +107,26 @@ where
         if let Option::Some(x) = opetate {
             unsafe { (**x).insert(word) }
         } else {
-            *opetate = Option::Some(&mut TreeNode::new(word) as *mut TreeNode<T>);
+            let val = Self::alloc_mut_one(word);
+            *opetate = Option::Some(val);
             true
         }
     }
 
-    fn alloc_mut_one() -> *mut Self {
+    fn alloc_mut_one(word: T) -> *mut TreeNode<T> {
         unsafe {
-            let align = mem::align_of::<Self>();
-            let layout = alloc::Layout::from_size_align(1, align).unwrap();
-            alloc::alloc(layout) as *mut Self
+            let layout = alloc::Layout::new::<TreeNode<T>>();
+            let ptr_ = alloc::alloc(layout) as *mut TreeNode<T>;
+            (*ptr_).element = word;
+            (*ptr_).left = Option::None;
+            (*ptr_).right = Option::None;
+            ptr_
         }
     }
 
     fn dealloc_mut_one(ptr: *mut Self) {
         unsafe {
-            let align = mem::align_of::<Self>();
-            let layout = alloc::Layout::from_size_align(1, align).unwrap();
+            let layout = alloc::Layout::new::<TreeNode<T>>();
             alloc::dealloc(ptr as *mut u8, layout);
         }
     }
@@ -101,7 +134,7 @@ where
 
 impl<T> Tree<T>
 where
-    T: Ord + Clone,
+    T: Debug + Ord + Clone,
 {
     fn new() -> Tree<T> {
         Tree { tree: Option::None }
@@ -131,7 +164,7 @@ where
     fn insert(&mut self, word: T) -> bool {
         match &mut self.tree {
             Option::None => {
-                self.tree = Option::Some(&mut TreeNode::new(word) as *mut TreeNode<T>);
+                self.tree = Option::Some(TreeNode::alloc_mut_one(word));
                 true
             }
             Option::Some(x) => unsafe { (**x).insert(word) },
@@ -141,13 +174,13 @@ where
 
 pub fn run() {
     let mut rng = rand::thread_rng();
-    let mut a = Tree::<u64>::new();
-    for _ in 0..3 {
-        a.insert(rng.gen_range(2345, 8765));
+    let mut t = Tree::<u64>::new();
+    for _ in 0..1000 {
+        t.insert(rng.gen_range(2345, 30000000));
     }
-    a.insert(100);
-    a.insert(101);
-    a.insert(99);
+    t.insert(100);
+    t.insert(101);
+    t.insert(99);
 
-    println!("{:#?}", a.find_max());
+    println!("{:#?}", t.find(101));
 }
