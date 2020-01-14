@@ -1,10 +1,13 @@
 pub mod arrays_and_slices;
+pub mod bczj2_3;
 pub mod c_like;
 pub mod debug;
 pub mod display;
 pub mod display_list;
 pub mod enms;
 pub mod formatting;
+pub mod generate_random;
+pub mod list_dir;
 pub mod literals;
 pub mod ray_;
 pub mod structures;

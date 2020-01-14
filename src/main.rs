@@ -1,5 +1,5 @@
-mod lib;
+mod rbe;
 
-pub fn main() {
-    lib::binary_tree_unsafe::run();
+fn main() {
+    rbe::bczj2_3::run();
 }

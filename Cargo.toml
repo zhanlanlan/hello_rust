@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 rand = "*"
+tokio = { version = "0.2", features = ["full"] }
 hyper = "*"
 toolshed = "*"
 rayon = "*"
