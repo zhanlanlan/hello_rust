@@ -1,5 +1,4 @@
-mod rbe;
-
+mod lib;
 fn main() {
-    rbe::bczj2_3::run();
+    println!("hello world!")
 }

@@ -9,8 +9,17 @@ edition = "2018"
 [dependencies]
 rand = "*"
 tokio = { version = "0.2", features = ["full"] }
+actix-web = "2"
+actix-rt = "1"
 hyper = "*"
 toolshed = "*"
 rayon = "*"
 typed-arena = "1.6.1"
 futures-preview = { version = "=0.3.0-alpha.17", features = ["compat"] }
+notify = "4.0.12"
+chrono = "0.4"
+log = "0.4.8"
+env_logger = "0.7.1"
+dotenv = "0.15.0"
+
+
